@@ -1,0 +1,100 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# PPE Safety System Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ─── Model Settings ──────────────────────────────────────────────────────────
+model:
+  weights_path: "../runs/ppe_detection/weights/best.pt"
+  confidence_threshold: 0.45
+  iou_threshold: 0.5
+  image_size: 640
+  device: "auto"  # auto, cpu, 0, 1, etc.
+
+# ─── Class Definitions ──────────────────────────────────────────────────────
+classes:
+  # PPE items (correct usage)
+  ppe_present:
+    - glove       # 0
+    - goggles     # 1
+    - helmet      # 2
+    - mask        # 3
+    - shoes       # 10
+    - suit        # 11
+
+  # PPE missing (violations)
+  ppe_missing:
+    - no-suit     # 4
+    - no_glove    # 5
+    - no_goggles  # 6
+    - no_helmet   # 7
+    - no_mask     # 8
+    - no_shoes    # 9
+
+  # Class ID mapping
+  names:
+    0: "glove"
+    1: "goggles"
+    2: "helmet"
+    3: "mask"
+    4: "no-suit"
+    5: "no_glove"
+    6: "no_goggles"
+    7: "no_helmet"
+    8: "no_mask"
+    9: "no_shoes"
+    10: "shoes"
+    11: "suit"
+
+  # Violation class IDs (these trigger alerts)
+  violation_ids: [4, 5, 6, 7, 8, 9]
+
+  # Mapping violation → required PPE name
+  violation_to_ppe:
+    4: "safety suit"
+    5: "safety gloves"
+    6: "safety goggles"
+    7: "safety helmet"
+    8: "face mask"
+    9: "safety shoes"
+
+# ─── Zone Definitions ───────────────────────────────────────────────────────
+# Zones define areas where PPE is required
+# Coordinates are normalized [0-1] relative to frame size
+zones:
+  - name: "Construction Zone A"
+    polygon: [[0.0, 0.0], [1.0, 0.0], [1.0, 1.0], [0.0, 1.0]]
+    required_ppe: ["helmet", "gloves", "goggles", "suit", "shoes", "mask"]
+    severity: "high"
+    color: [255, 0, 0]
+
+# ─── Tracking Settings ──────────────────────────────────────────────────────
+tracking:
+  tracker: "bytetrack.yaml"
+  persist: true
+  max_disappeared: 30  # frames before losing track
+
+# ─── Alert Settings ─────────────────────────────────────────────────────────
+alerts:
+  cooldown_seconds: 10        # seconds before re-alerting same person
+  min_frames_for_alert: 5     # must detect violation for N frames
+  language: "en"              # en, ar
+  tts_enabled: true
+  tts_speed: 1.0
+  alert_sound: true
+  save_snapshots: true
+  snapshot_dir: "snapshots"
+
+# ─── Backend/API Settings ───────────────────────────────────────────────────
+backend:
+  host: "0.0.0.0"
+  port: 8888
+  database: "violations.db"
+  cors_origins: ["*"]
+
+# ─── Video/Camera Settings ──────────────────────────────────────────────────
+video:
+  source: "video2.ts"         # default video; override with --source flag
+  output_dir: "output"
+  save_video: true
+  show_display: false         # headless — OpenCV built without GUI support
+  fps_limit: 30

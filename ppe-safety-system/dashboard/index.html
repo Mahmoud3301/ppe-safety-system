@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPE Safety Monitor — Dashboard</title>
+    <meta name="description" content="Real-time PPE violation monitoring dashboard for workplace safety">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🛡️</div>
+                <div class="logo-text">
+                    <span class="logo-title">PPE Safety</span>
+                    <span class="logo-subtitle">Monitor v2.0</span>
+                </div>
+            </div>
+            <button class="sidebar-close" id="sidebar-close">✕</button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="violations" id="nav-violations">
+                <span class="nav-icon">🚨</span>
+                <span class="nav-label">Violations</span>
+                <span class="nav-badge" id="unresolved-badge">0</span>
+            </a>
+            <a href="#" class="nav-item" data-page="analytics" id="nav-analytics">
+                <span class="nav-icon">📈</span>
+                <span class="nav-label">Analytics</span>
+            </a>
+            <a href="#" class="nav-item" data-page="sessions" id="nav-sessions">
+                <span class="nav-icon">⏱️</span>
+                <span class="nav-label">Working Hours</span>
+            </a>
+            <a href="#" class="nav-item" data-page="live" id="nav-live">
+                <span class="nav-icon">🎥</span>
+                <span class="nav-label">Live View</span>
+                <span class="nav-badge live-badge" id="live-badge" style="background:#10b981;display:none">●</span>
+            </a>
+            <a href="#" class="nav-item" data-page="zones" id="nav-zones">
+                <span class="nav-icon">📍</span>
+                <span class="nav-label">Zones</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="system-status">
+                <div class="status-dot pulse" id="status-dot"></div>
+                <span id="system-status-text">System Active</span>
+            </div>
+            <div class="sidebar-version">PPE Safety System © 2026</div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="menu-toggle" id="menu-toggle">☰</button>
+                <div class="topbar-title">
+                    <h1 id="page-title">Dashboard</h1>
+                    <span class="topbar-date" id="current-date"></span>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <div class="live-indicator" id="live-indicator">
+                    <span class="live-dot"></span>
+                    <span class="live-text">LIVE</span>
+                </div>
+                <button class="btn-icon" id="btn-refresh" title="Refresh Data">🔄</button>
+                <button class="btn-icon theme-toggle" id="btn-theme" title="Toggle Light/Dark Mode">🌙</button>
+            </div>
+        </header>
+
+        <!-- ══════════════════════ DASHBOARD PAGE ══════════════════════ -->
+        <div class="page active" id="page-dashboard">
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid" id="kpi-grid">
+
+                <div class="kpi-card kpi-total" id="kpi-card-total">
+                    <div class="kpi-glow"></div>
+                    <div class="kpi-icon-wrap"><span class="kpi-icon">⚠️</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value" id="kpi-total">0</span>
+                        <span class="kpi-label">Total Violations</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-today">
+                    <div class="kpi-glow"></div>
+                    <div class="kpi-icon-wrap"><span class="kpi-icon">📅</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value" id="kpi-today">0</span>
+                        <span class="kpi-label">Today</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-critical">
+                    <div class="kpi-glow"></div>
+                    <div class="kpi-icon-wrap"><span class="kpi-icon">🔴</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value" id="kpi-critical">0</span>
+                        <span class="kpi-label">Critical</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-unresolved">
+                    <div class="kpi-glow"></div>
+                    <div class="kpi-icon-wrap"><span class="kpi-icon">⏳</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value" id="kpi-unresolved">0</span>
+                        <span class="kpi-label">Unresolved</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-workers">
+                    <div class="kpi-glow"></div>
+                    <div class="kpi-icon-wrap"><span class="kpi-icon">👷</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value" id="kpi-workers">0</span>
+                        <span class="kpi-label">Workers Flagged</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-hours">
+                    <div class="kpi-glow"></div>
+                    <div class="kpi-icon-wrap"><span class="kpi-icon">⏰</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value kpi-value-sm" id="kpi-hours">0h 0m</span>
+                        <span class="kpi-label">Working Hours Today</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-deductions">
+                    <div class="kpi-glow"></div>
+                    <div class="kpi-icon-wrap"><span class="kpi-icon">💰</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value" id="kpi-deductions">0</span>
+                        <span class="kpi-label">Deductions Applied</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card kpi-hour">
+                    <div class="kpi-glow"></div>
+                    <div class="kpi-icon-wrap"><span class="kpi-icon">🕐</span></div>
+                    <div class="kpi-info">
+                        <span class="kpi-value" id="kpi-hour">0</span>
+                        <span class="kpi-label">Last Hour</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="charts-row">
+                <div class="chart-card wide">
+                    <div class="chart-header">
+                        <div class="chart-title-group">
+                            <h3>Violation Trend (Last 24 Hours)</h3>
+                            <span class="chart-subtitle" id="trend-subtitle">Real data from detection sessions</span>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="chart-hourly"></canvas>
+                        <div class="chart-empty" id="chart-hourly-empty">
+                            <div class="empty-icon">📊</div>
+                            <p>No violations recorded yet.<br>Run detection on a video to see data here.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Severity Breakdown</h3>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="chart-severity"></canvas>
+                        <div class="chart-empty" id="chart-severity-empty">
+                            <div class="empty-icon">🎯</div>
+                            <p>No data yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Violations by Zone</h3>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="chart-zones"></canvas>
+                        <div class="chart-empty" id="chart-zones-empty">
+                            <div class="empty-icon">📍</div>
+                            <p>No zone data yet</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Top Missing PPE Items</h3>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="chart-items"></canvas>
+                        <div class="chart-empty" id="chart-items-empty">
+                            <div class="empty-icon">🦺</div>
+                            <p>No PPE data yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Violations Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Recent Violations</h3>
+                    <div class="table-header-actions">
+                        <span class="table-count" id="recent-count">—</span>
+                        <a href="#" class="view-all-btn" id="view-all-link">View All →</a>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="recent-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Time</th>
+                                <th>Worker ID</th>
+                                <th>User</th>
+                                <th>Zone</th>
+                                <th>Missing PPE</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Photo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-tbody">
+                            <tr class="empty-row">
+                                <td colspan="9">No violations recorded yet — run detection to populate</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════ VIOLATIONS PAGE ══════════════════════ -->
+        <div class="page" id="page-violations">
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <label>Severity</label>
+                    <select id="filter-severity" class="filter-select">
+                        <option value="">All</option>
+                        <option value="single">Single</option>
+                        <option value="multiple">Multiple</option>
+                        <option value="critical">Critical</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select id="filter-status" class="filter-select">
+                        <option value="">All</option>
+                        <option value="0">Unresolved</option>
+                        <option value="1">Resolved</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Deduction</label>
+                    <select id="filter-deduction" class="filter-select">
+                        <option value="">All</option>
+                        <option value="1">Deducted</option>
+                        <option value="0">No Deduction</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>From</label>
+                    <input type="date" id="filter-date-from" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label>To</label>
+                    <input type="date" id="filter-date-to" class="filter-input">
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-primary" id="btn-apply-filters">🔍 Apply</button>
+                    <button class="btn btn-ghost" id="btn-clear-filters">✕ Clear</button>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>All Violations</h3>
+                    <span class="table-count" id="violations-total-count">0 records</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="violations-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Time</th>
+                                <th>Worker</th>
+                                <th>User ID</th>
+                                <th>Zone</th>
+                                <th>Missing PPE</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Deduction</th>
+                                <th>Photo</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="violations-tbody">
+                            <tr class="empty-row">
+                                <td colspan="11">No violations found</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════ ANALYTICS PAGE ══════════════════════ -->
+        <div class="page" id="page-analytics">
+
+            <!-- Analytics KPIs -->
+            <div class="analytics-kpis" id="analytics-kpis">
+                <div class="a-kpi-card">
+                    <span class="a-kpi-icon">📊</span>
+                    <div>
+                        <span class="a-kpi-value" id="a-kpi-total">0</span>
+                        <span class="a-kpi-label">Total Violations</span>
+                    </div>
+                </div>
+                <div class="a-kpi-card">
+                    <span class="a-kpi-icon">✅</span>
+                    <div>
+                        <span class="a-kpi-value" id="a-kpi-resolved">0</span>
+                        <span class="a-kpi-label">Resolved</span>
+                    </div>
+                </div>
+                <div class="a-kpi-card">
+                    <span class="a-kpi-icon">⚡</span>
+                    <div>
+                        <span class="a-kpi-value" id="a-kpi-rate">0%</span>
+                        <span class="a-kpi-label">Resolution Rate</span>
+                    </div>
+                </div>
+                <div class="a-kpi-card">
+                    <span class="a-kpi-icon">⏱️</span>
+                    <div>
+                        <span class="a-kpi-value a-kpi-value-sm" id="a-kpi-hours">0h 0m</span>
+                        <span class="a-kpi-label">Total Working Hours</span>
+                    </div>
+                </div>
+                <div class="a-kpi-card">
+                    <span class="a-kpi-icon">💰</span>
+                    <div>
+                        <span class="a-kpi-value" id="a-kpi-deductions">0</span>
+                        <span class="a-kpi-label">Total Deductions</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-card wide">
+                    <div class="chart-header">
+                        <h3>Violations Over Time (24h)</h3>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="chart-analytics-trend"></canvas>
+                        <div class="chart-empty" id="chart-analytics-trend-empty">
+                            <div class="empty-icon">📈</div>
+                            <p>No violation data yet.<br>Run the detection system on a video or live camera.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Resolution Rate</h3>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="chart-resolution"></canvas>
+                        <div class="chart-empty" id="chart-resolution-empty">
+                            <div class="empty-icon">✅</div>
+                            <p>No data yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>PPE Violations by Type</h3>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="chart-ppe-types"></canvas>
+                        <div class="chart-empty" id="chart-ppe-types-empty">
+                            <div class="empty-icon">🦺</div>
+                            <p>No data yet</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Severity Distribution</h3>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="chart-severity-analytics"></canvas>
+                        <div class="chart-empty" id="chart-severity-analytics-empty">
+                            <div class="empty-icon">🎯</div>
+                            <p>No data yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════ WORKING HOURS PAGE ══════════════════════ -->
+        <div class="page" id="page-sessions">
+
+            <div class="sessions-summary" id="sessions-summary">
+                <div class="session-stat-card">
+                    <span class="session-stat-icon">⏱️</span>
+                    <div>
+                        <span class="session-stat-value" id="sess-total-hours">—</span>
+                        <span class="session-stat-label">Total Hours Logged</span>
+                    </div>
+                </div>
+                <div class="session-stat-card">
+                    <span class="session-stat-icon">📅</span>
+                    <div>
+                        <span class="session-stat-value" id="sess-today-hours">—</span>
+                        <span class="session-stat-label">Today's Hours</span>
+                    </div>
+                </div>
+                <div class="session-stat-card">
+                    <span class="session-stat-icon">🎬</span>
+                    <div>
+                        <span class="session-stat-value" id="sess-count">0</span>
+                        <span class="session-stat-label">Total Sessions</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <div class="table-header">
+                    <h3>Detection Sessions (Working Hours Log)</h3>
+                    <span class="chart-subtitle">Tracked from actual video/live run times</span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table" id="sessions-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>User</th>
+                                <th>Source</th>
+                                <th>Started At</th>
+                                <th>Ended At</th>
+                                <th>Duration</th>
+                                <th>Frames</th>
+                                <th>Violations</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sessions-tbody">
+                            <tr class="empty-row">
+                                <td colspan="9">No sessions recorded yet — run detection to log working hours</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════════ LIVE VIEW PAGE ══════════════════════ -->
+        <div class="page" id="page-live">
+
+            <!-- Control Panel -->
+            <div class="live-control-panel">
+                <div class="live-panel-header">
+                    <h3>🎥 Detection Control</h3>
+                    <div class="live-status-pill" id="live-status-pill">⬤ Stopped</div>
+                </div>
+
+                <div class="live-controls-row">
+                    <div class="filter-group">
+                        <label>Source</label>
+                        <select id="live-source-type" class="filter-select" onchange="updateSourceUI()">
+                            <option value="video">📁 Video File</option>
+                            <option value="camera">📷 Live Camera</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="live-video-group">
+                        <label>Video File</label>
+                        <select id="live-video-select" class="filter-select">
+                            <option value="video2.ts">video2.ts</option>
+                            <option value="test_video.mp4">test_video.mp4</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="live-cam-group" style="display:none">
+                        <label>Camera Index</label>
+                        <select id="live-cam-index" class="filter-select">
+                            <option value="0">Camera 0</option>
+                            <option value="1">Camera 1</option>
+                            <option value="2">Camera 2</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>User / Operator ID</label>
+                        <input type="text" id="live-user-id" class="filter-input" value="operator_01" placeholder="operator_01">
+                    </div>
+                    <div class="filter-group">
+                        <label>Audio</label>
+                        <select id="live-tts" class="filter-select">
+                            <option value="false">🔊 AR + EN</option>
+                            <option value="true">🔇 Silent</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn btn-primary" id="btn-start-det" onclick="startDetection()">▶ Start</button>
+                        <button class="btn btn-danger" id="btn-stop-det" onclick="stopDetection()" disabled>⏹ Stop</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Stats Row -->
+            <div class="live-stats-row" id="live-stats-row">
+                <div class="live-stat-card"><span class="ls-icon">🎞</span><div><span class="ls-val" id="ls-frames">0</span><span class="ls-label">Frames</span></div></div>
+                <div class="live-stat-card"><span class="ls-icon">🚨</span><div><span class="ls-val" id="ls-violations">0</span><span class="ls-label">Violations</span></div></div>
+                <div class="live-stat-card"><span class="ls-icon">👷</span><div><span class="ls-val" id="ls-workers">0</span><span class="ls-label">Workers</span></div></div>
+                <div class="live-stat-card"><span class="ls-icon">⚡</span><div><span class="ls-val" id="ls-fps">0</span><span class="ls-label">FPS</span></div></div>
+                <div class="live-stat-card"><span class="ls-icon">📊</span><div><span class="ls-val" id="ls-progress">—</span><span class="ls-label">Progress</span></div></div>
+                <div class="live-stat-card"><span class="ls-icon">⏱️</span><div><span class="ls-val" id="ls-elapsed">0s</span><span class="ls-label">Elapsed</span></div></div>
+            </div>
+
+            <!-- Video Feed -->
+            <div class="live-feed-card">
+                <div class="live-feed-header">
+                    <span class="live-feed-title">📡 Live Feed</span>
+                    <span class="live-feed-src" id="live-feed-src">No source selected</span>
+                </div>
+                <div class="live-feed-body">
+                    <img id="live-stream-img" src="/api/stream"
+                         alt="Live feed" class="live-stream-img">
+                    <div class="live-overlay-stopped" id="live-overlay-stopped">
+                        <div class="live-overlay-icon">🎥</div>
+                        <p>Select a source and press <strong>▶ Start</strong> to begin</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════ ZONES PAGE ══════════════════════ -->
+        <div class="page" id="page-zones">
+            <div class="zones-header">
+                <h3>Monitored Zones</h3>
+                <p class="zones-subtitle">Zones with violation data from detection runs</p>
+            </div>
+            <div class="zones-grid" id="zones-grid">
+                <div class="zone-empty">
+                    <div class="empty-icon">📍</div>
+                    <p>No zone data yet.<br>Run detection to see zone violation stats.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ══════════════════════ MODAL ══════════════════════ -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h3 id="modal-title">Violation Details</h3>
+                <button class="modal-close" id="modal-close">✕</button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
